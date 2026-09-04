@@ -254,20 +254,7 @@ CREATE TABLE IF NOT EXISTS recovery_events (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS finder_sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
-  qr_token_id UUID REFERENCES qr_tokens(id) ON DELETE SET NULL,
-  finder_location JSONB,
-  finder_location_accuracy DECIMAL(10,2),
-  contact_info_shared JSONB DEFAULT '{}'::jsonb,
-  sighting_reported BOOLEAN DEFAULT FALSE,
-  reported_at TIMESTAMPTZ,
-  user_agent TEXT,
-  ip_hash TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ
-);
+
 
 CREATE TABLE IF NOT EXISTS qr_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -283,7 +270,20 @@ CREATE TABLE IF NOT EXISTS qr_tokens (
   max_scans INTEGER DEFAULT 1,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
+CREATE TABLE IF NOT EXISTS finder_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
+  qr_token_id UUID REFERENCES qr_tokens(id) ON DELETE SET NULL,
+  finder_location JSONB,
+  finder_location_accuracy DECIMAL(10,2),
+  contact_info_shared JSONB DEFAULT '{}'::jsonb,
+  sighting_reported BOOLEAN DEFAULT FALSE,
+  reported_at TIMESTAMPTZ,
+  user_agent TEXT,
+  ip_hash TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ
+);
 CREATE TABLE IF NOT EXISTS rescue_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
