@@ -6,6 +6,7 @@ const PROTECTED = ['/dashboard','/devices','/map','/recovery','/activity','/trus
 const AUTH_ONLY = ['/login','/signup','/forgot-password'];
 function matches(pathname:string, prefixes:string[]){ return prefixes.some(p=> pathname===p || pathname.startsWith(`${p}/`)); }
 export async function middleware(request: NextRequest){
+  if (!supabaseUrl || !supabaseAnonKey) return NextResponse.next({ request });
   let response = NextResponse.next({ request });
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -17,7 +18,7 @@ export async function middleware(request: NextRequest){
       }
     }
   });
-  const { data:{user} } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
   if (matches(pathname, PROTECTED) && !user){ const url=request.nextUrl.clone(); url.pathname='/login'; url.searchParams.set('redirectedFrom',pathname); return NextResponse.redirect(url); }
   if (matches(pathname, AUTH_ONLY) && user){ const url=request.nextUrl.clone(); url.pathname='/dashboard'; url.search=''; return NextResponse.redirect(url); }

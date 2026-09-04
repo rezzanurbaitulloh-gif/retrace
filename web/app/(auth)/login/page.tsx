@@ -22,7 +22,11 @@ export default function LoginPage(){
     try{
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      // Ensure cookies are synced to middleware (SSR) then hard navigate
       router.push('/dashboard');
+      router.refresh();
+      // Fallback hard navigation if middleware cookie sync is slow
+      setTimeout(()=> { window.location.href='/dashboard'; }, 300);
     } catch(err:any){ setError(err.message ?? 'Login failed'); }
     finally{ setLoading(false); }
   }
