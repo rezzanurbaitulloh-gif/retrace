@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getServiceSupabase } from '@/lib/supabase';
 import crypto from 'crypto';
+import { rateLimit, rateLimitKey } from '@/lib/rate-limit';
 
 export async function POST(req: Request){
+  const rl = rateLimit(rateLimitKey(req,'finder'), 10, 300_000);
+  if (!rl.ok) return NextResponse.json({ error:'Rate limited' },{status:429});
   const { token, latitude, longitude, accuracy, contact_info } = await req.json();
   if (!token) return NextResponse.json({ error:'token required' },{status:400});
   const service = getServiceSupabase();

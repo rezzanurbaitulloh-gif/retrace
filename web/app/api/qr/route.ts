@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getServerSupabase, getServiceSupabase } from '@/lib/supabase';
 import crypto from 'crypto';
+import { rateLimit, rateLimitKey } from '@/lib/rate-limit';
 
 // POST /api/qr — generate short-lived signed token for a lost device
 export async function POST(req: Request){
+  const rl = rateLimit(rateLimitKey(req,'qr'), 20, 60_000);
+  if (!rl.ok) return NextResponse.json({ error:'Rate limited' },{status:429});
   const supabase = await getServerSupabase();
   const { data:{user} } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error:'Unauthorized' },{status:401});

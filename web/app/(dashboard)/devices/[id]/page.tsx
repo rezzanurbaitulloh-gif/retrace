@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Badge, StatusBadge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RetraceMap } from '@/components/map/retrace-map';
+import { BatteryIndicator } from '@/components/device/battery-indicator';
+import { LostScreenPreview } from '@/components/device/lost-screen';
+import { ContactInfoSafe } from '@/components/device/contact-info-safe';
+import { StateView, OfflineBanner, UnsupportedBanner } from '@/components/ui/state';
 import { supabase } from '@/lib/supabase';
 import { accuracyLabel, timeAgo } from '@/lib/utils';
 
@@ -63,6 +67,8 @@ export default function DeviceDetailPage({ params }: { params:{id:string}}){
   return (
     <AppShell>
       <div className="space-y-4">
+        {!device.is_online && <OfflineBanner />}
+        {device.state==='LOST' && <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm">🔴 LOST — emergency actions are primary (PRD 93)</div>}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">{device.name} <StatusBadge status={device.state} /></h1>
@@ -167,6 +173,9 @@ export default function DeviceDetailPage({ params }: { params:{id:string}}){
               <CardContent className="space-y-2 text-sm">
                 <p><span className="font-medium">RETRACE ID:</span> <span className="font-mono text-xs">{device.retrace_device_id}</span></p>
                 <p><span className="font-medium">Crypto identity:</span> <span className="font-mono text-xs break-all">{device.cryptographic_identity}</span></p>
+                <BatteryIndicator level={device.battery_level} isCharging={device.is_charging} />
+                <LostScreenPreview owner={device.name} recoveryId={device.retrace_device_id} />
+                <ContactInfoSafe />
                 <p className="text-muted-foreground">IMEI is supplementary. Deleting app or factory reset clears local keys; server re-recognizes device when identity matches on reconnect (if available).</p>
               </CardContent>
             </Card>

@@ -18,7 +18,7 @@ export default function AdminPage(){
   return (
     <AppShell>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardHeader><CardTitle>Overview</CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><div className="flex justify-between"><span>Users</span><Badge variant="outline">—</Badge></div><div className="flex justify-between"><span>Devices</span><Badge variant="outline">—</Badge></div><div className="flex justify-between"><span>Active cases</span><Badge variant="outline">—</Badge></div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Overview — <a href="/admin/users" className="text-primary underline">Users</a> • <a href="/admin/devices" className="text-primary underline">Devices</a> • <a href="/admin/recovery" className="text-primary underline">Recovery</a> • <a href="/admin/audit" className="text-primary underline">Audit</a></CardTitle></CardHeader><CardContent className="space-y-2 text-sm"><div className="flex justify-between"><span>Users</span><Badge variant="outline">—</Badge></div><div className="flex justify-between"><span>Devices</span><Badge variant="outline">—</Badge></div><div className="flex justify-between"><span>Active cases</span><Badge variant="outline">—</Badge></div></CardContent></Card>
         <Card><CardHeader><CardTitle>Live Map</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Active recovery cases on map. Real-time via Supabase Realtime.</p></CardContent></Card>
         <Card><CardHeader><CardTitle>Audit Logs</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">All admin actions are immutable and require a reason. No plaintext passwords, PINs, or keys are ever exposed.</p></CardContent></Card>
       </div>

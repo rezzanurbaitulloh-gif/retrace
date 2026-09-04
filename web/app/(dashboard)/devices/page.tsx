@@ -57,7 +57,7 @@ export default function DevicesPage(){
               <div><Label>Serial (optional)</Label><Input value={form.serial_number} onChange={e=>setForm({...form,serial_number:e.target.value})} placeholder="—" /></div>
               <div className="md:col-span-6 flex gap-2">
                 <Button type="submit" loading={creating}>Register Device</Button>
-                <p className="text-xs text-muted-foreground self-center">IMEI is supplementary, not primary identity. Primary is RETRACE Device ID + cryptographic binding.</p>
+                <p className="text-xs text-muted-foreground self-center">IMEI is supplementary, not primary identity. Primary is RETRACE Device ID + cryptographic binding + metadata (brand/model/OS/imei1/imei2/serial/phone/photo/purchase). See PRD 6-7.</p>
               </div>
             </form>
             {error && <p role="alert" className="mt-3 text-sm text-destructive bg-destructive/10 border rounded-lg px-3 py-2">{error}</p>}
