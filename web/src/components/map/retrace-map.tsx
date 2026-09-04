@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { accuracyLabel } from '@/lib/utils';
 
-const MapContainer = dynamic(()=> import('react-leaflet').then(m=> m.MapContainer), { ssr:false });
-const TileLayer = dynamic(()=> import('react-leaflet').then(m=> m.TileLayer), { ssr:false });
-const Marker = dynamic(()=> import('react-leaflet').then(m=> m.Marker), { ssr:false });
-const Circle = dynamic(()=> import('react-leaflet').then(m=> m.Circle), { ssr:false });
-const Popup = dynamic(()=> import('react-leaflet').then(m=> m.Popup), { ssr:false });
+const MapContainer = dynamic(()=> import('react-leaflet').then(m=> m.MapContainer), { ssr:false }) as any;
+const TileLayer = dynamic(()=> import('react-leaflet').then(m=> m.TileLayer), { ssr:false }) as any;
+const Marker = dynamic(()=> import('react-leaflet').then(m=> m.Marker), { ssr:false }) as any;
+const Circle = dynamic(()=> import('react-leaflet').then(m=> m.Circle), { ssr:false }) as any;
+const Popup = dynamic(()=> import('react-leaflet').then(m=> m.Popup), { ssr:false }) as any;
 
 export interface MapPoint { lat:number; lng:number; accuracy?:number|null; label?:string; confidence?:string; source?:string; timestamp?:string }
 
@@ -18,13 +18,10 @@ export function RetraceMap({ points, center, zoom=13, onRecenter }:{ points: Map
   const mapCenter = center ?? (points[0] ? [points[0].lat, points[0].lng] as [number,number] : [-6.2088,106.8456]);
   return (
     <div className="relative overflow-hidden rounded-xl border">
-      {/* @ts-expect-error react-leaflet dynamic */}
       <MapContainer center={mapCenter} zoom={zoom} style={{height:420, width:'100%'}}>
-        {/* @ts-expect-error react-leaflet dynamic */}
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
         {points.map((p,i)=>(
           <div key={i}>
-            {/* @ts-expect-error react-leaflet dynamic */}
             <Marker position={[p.lat,p.lng]}>{p.label && <Popup>{p.label}<br/>{accuracyLabel(p.accuracy)} • {p.source} • {p.confidence}</Popup>}</Marker>
             {p.accuracy && <Circle center={[p.lat,p.lng]} radius={p.accuracy} pathOptions={{ color:'#16a34a', fillColor:'#22c55e', fillOpacity:0.15 }} />}
           </div>
