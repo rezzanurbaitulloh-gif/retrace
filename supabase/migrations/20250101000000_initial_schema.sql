@@ -1,21 +1,40 @@
--- RETRACE Database Schema - Initial Migration
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "postgis";
+-- RETRACE Database Schema - Supabase compatible
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" SCHEMA public;
+-- Use gen_random_uuid() from pgcrypto (Supabase default)
 
-CREATE TYPE device_state AS ENUM ('ACTIVE','ONLINE','OFFLINE','LOST','RECOVERING','RECOVERED','DISABLED','PENDING');
-CREATE TYPE lost_lifecycle AS ENUM ('NORMAL','LOST','SEARCHING','SIGHTED','RECOVERING','RECOVERED');
-CREATE TYPE location_source AS ENUM ('GPS','NETWORK','CELLULAR','NEARBY','FINDER','UNKNOWN');
-CREATE TYPE location_confidence AS ENUM ('HIGH','MEDIUM','LOW');
-CREATE TYPE activity_category AS ENUM ('SECURITY','LOCATION','DEVICE','RECOVERY','FINDER','RESCUE','EVIDENCE','SYSTEM','ADMIN');
-CREATE TYPE activity_priority AS ENUM ('CRITICAL','IMPORTANT','INFO','DEBUG');
-CREATE TYPE trusted_permission_level AS ENUM ('ALWAYS_TRACK','EMERGENCY_ONLY','RECOVERY_ONLY','NO_ACCESS');
-CREATE TYPE command_type AS ENUM ('LOCATE','RING','VIBRATE','LOCK','SHOW_LOST_SCREEN','CONTACT_OWNER','QR_RECOVERY','RESCUE','ACTIVITY','EVIDENCE');
-CREATE TYPE command_status AS ENUM ('QUEUED','SENT','DELIVERED','EXECUTED','FAILED','EXPIRED','ACKNOWLEDGED');
-CREATE TYPE sync_status AS ENUM ('PENDING','SYNCING','SYNCED','FAILED','CONFLICT');
+DO $$ BEGIN
+  CREATE TYPE device_state AS ENUM ('ACTIVE','ONLINE','OFFLINE','LOST','RECOVERING','RECOVERED','DISABLED','PENDING');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE lost_lifecycle AS ENUM ('NORMAL','LOST','SEARCHING','SIGHTED','RECOVERING','RECOVERED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE location_source AS ENUM ('GPS','NETWORK','CELLULAR','NEARBY','FINDER','UNKNOWN');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE location_confidence AS ENUM ('HIGH','MEDIUM','LOW');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE activity_category AS ENUM ('SECURITY','LOCATION','DEVICE','RECOVERY','FINDER','RESCUE','EVIDENCE','SYSTEM','ADMIN');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE activity_priority AS ENUM ('CRITICAL','IMPORTANT','INFO','DEBUG');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE trusted_permission_level AS ENUM ('ALWAYS_TRACK','EMERGENCY_ONLY','RECOVERY_ONLY','NO_ACCESS');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE command_type AS ENUM ('LOCATE','RING','VIBRATE','LOCK','SHOW_LOST_SCREEN','CONTACT_OWNER','QR_RECOVERY','RESCUE','ACTIVITY','EVIDENCE');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE command_status AS ENUM ('QUEUED','SENT','DELIVERED','EXECUTED','FAILED','EXPIRED','ACKNOWLEDGED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN
+  CREATE TYPE sync_status AS ENUM ('PENDING','SYNCING','SYNCED','FAILED','CONFLICT');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   phone_number TEXT UNIQUE,
   full_name TEXT NOT NULL,
@@ -33,8 +52,8 @@ CREATE TABLE users (
   phone_verified BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   recovery_pin_hash TEXT NOT NULL,
   recovery_secret_hash TEXT NOT NULL,
@@ -46,8 +65,8 @@ CREATE TABLE profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE devices (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS devices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   brand TEXT,
@@ -66,7 +85,7 @@ CREATE TABLE devices (
   cryptographic_identity TEXT NOT NULL,
   state device_state DEFAULT 'PENDING',
   lost_state lost_lifecycle DEFAULT 'NORMAL',
-  last_known_location GEOGRAPHY(POINT, 4326),
+  last_known_location JSONB,
   last_known_location_accuracy DECIMAL(10,2),
   last_known_location_timestamp TIMESTAMPTZ,
   battery_level DECIMAL(5,2),
@@ -85,8 +104,8 @@ CREATE TABLE devices (
   registered_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE device_credentials (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS device_credentials (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE UNIQUE,
   encryption_key_hash TEXT NOT NULL,
   auth_token_hash TEXT,
@@ -98,8 +117,8 @@ CREATE TABLE device_credentials (
   expires_at TIMESTAMPTZ
 );
 
-CREATE TABLE device_permissions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS device_permissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   permission_type TEXT NOT NULL,
   is_granted BOOLEAN DEFAULT FALSE,
@@ -111,8 +130,8 @@ CREATE TABLE device_permissions (
   UNIQUE(device_id, permission_type)
 );
 
-CREATE TABLE device_locations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS device_locations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   latitude DECIMAL(10, 8) NOT NULL,
   longitude DECIMAL(11, 8) NOT NULL,
@@ -128,8 +147,8 @@ CREATE TABLE device_locations (
   metadata JSONB DEFAULT '{}'::jsonb
 );
 
-CREATE TABLE location_sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS location_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   started_at TIMESTAMPTZ DEFAULT NOW(),
   ended_at TIMESTAMPTZ,
@@ -138,8 +157,8 @@ CREATE TABLE location_sessions (
   metadata JSONB DEFAULT '{}'::jsonb
 );
 
-CREATE TABLE location_sources (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS location_sources (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
   description TEXT,
   min_accuracy DECIMAL(10,2),
@@ -148,8 +167,8 @@ CREATE TABLE location_sources (
   is_active BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE location_history (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS location_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   date DATE NOT NULL,
   locations JSONB NOT NULL,
@@ -158,15 +177,15 @@ CREATE TABLE location_history (
   UNIQUE(device_id, date)
 );
 
-CREATE TABLE lost_cases (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS lost_cases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   reported_by UUID REFERENCES users(id),
   reported_at TIMESTAMPTZ DEFAULT NOW(),
   confirmed_at TIMESTAMPTZ,
   recovered_at TIMESTAMPTZ,
   status lost_lifecycle DEFAULT 'LOST',
-  last_known_location GEOGRAPHY(POINT, 4326),
+  last_known_location JSONB,
   recovery_message TEXT,
   contact_info JSONB DEFAULT '{}'::jsonb,
   qr_token_id UUID,
@@ -176,8 +195,8 @@ CREATE TABLE lost_cases (
   metadata JSONB DEFAULT '{}'::jsonb
 );
 
-CREATE TABLE lost_commands (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS lost_commands (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   command_type command_type NOT NULL,
@@ -196,8 +215,8 @@ CREATE TABLE lost_commands (
   acknowledged_at TIMESTAMPTZ
 );
 
-CREATE TABLE command_results (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS command_results (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   command_id UUID REFERENCES lost_commands(id) ON DELETE CASCADE,
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   success BOOLEAN NOT NULL,
@@ -208,8 +227,8 @@ CREATE TABLE command_results (
   received_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE activity_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS activity_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE SET NULL,
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -218,28 +237,28 @@ CREATE TABLE activity_events (
   event_type TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
-  location GEOGRAPHY(POINT, 4326),
+  location JSONB,
   metadata JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE recovery_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS recovery_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   description TEXT,
-  location GEOGRAPHY(POINT, 4326),
+  location JSONB,
   finder_id UUID,
   evidence_id UUID,
   metadata JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE finder_sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS finder_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
   qr_token_id UUID REFERENCES qr_tokens(id) ON DELETE SET NULL,
-  finder_location GEOGRAPHY(POINT, 4326),
+  finder_location JSONB,
   finder_location_accuracy DECIMAL(10,2),
   contact_info_shared JSONB DEFAULT '{}'::jsonb,
   sighting_reported BOOLEAN DEFAULT FALSE,
@@ -250,8 +269,8 @@ CREATE TABLE finder_sessions (
   expires_at TIMESTAMPTZ
 );
 
-CREATE TABLE qr_tokens (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS qr_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
   token_hash TEXT NOT NULL,
@@ -265,8 +284,8 @@ CREATE TABLE qr_tokens (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE rescue_sessions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS rescue_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE CASCADE,
   finder_session_id UUID REFERENCES finder_sessions(id) ON DELETE SET NULL,
   tier INTEGER DEFAULT 3,
@@ -281,8 +300,8 @@ CREATE TABLE rescue_sessions (
   metadata JSONB DEFAULT '{}'::jsonb
 );
 
-CREATE TABLE trusted_contacts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS trusted_contacts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   contact_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   permission_level trusted_permission_level DEFAULT 'NO_ACCESS',
@@ -293,8 +312,8 @@ CREATE TABLE trusted_contacts (
   UNIQUE(user_id, contact_user_id)
 );
 
-CREATE TABLE trusted_permissions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS trusted_permissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trusted_contact_id UUID REFERENCES trusted_contacts(id) ON DELETE CASCADE,
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   can_track BOOLEAN DEFAULT FALSE,
@@ -307,12 +326,12 @@ CREATE TABLE trusted_permissions (
   UNIQUE(trusted_contact_id, device_id)
 );
 
-CREATE TABLE evidence (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS evidence (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   device_id UUID REFERENCES devices(id) ON DELETE CASCADE,
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE SET NULL,
   timestamp TIMESTAMPTZ NOT NULL,
-  location GEOGRAPHY(POINT, 4326),
+  location JSONB,
   camera_source TEXT,
   metadata JSONB DEFAULT '{}'::jsonb,
   file_hash TEXT NOT NULL,
@@ -324,8 +343,8 @@ CREATE TABLE evidence (
   last_accessed_at TIMESTAMPTZ
 );
 
-CREATE TABLE evidence_uploads (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS evidence_uploads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   evidence_id UUID REFERENCES evidence(id) ON DELETE CASCADE,
   storage_path TEXT NOT NULL,
   storage_bucket TEXT NOT NULL,
@@ -336,8 +355,8 @@ CREATE TABLE evidence_uploads (
   verified BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   device_id UUID REFERENCES devices(id) ON DELETE SET NULL,
   lost_case_id UUID REFERENCES lost_cases(id) ON DELETE SET NULL,
@@ -355,8 +374,8 @@ CREATE TABLE notifications (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE admin_users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS admin_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   role TEXT DEFAULT 'admin',
   permissions JSONB DEFAULT '{}'::jsonb,
@@ -364,8 +383,8 @@ CREATE TABLE admin_users (
   created_by UUID REFERENCES admin_users(id)
 );
 
-CREATE TABLE admin_actions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS admin_actions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_id UUID REFERENCES admin_users(id) ON DELETE CASCADE,
   action TEXT NOT NULL,
   target_type TEXT NOT NULL,
@@ -376,8 +395,8 @@ CREATE TABLE admin_actions (
   metadata JSONB DEFAULT '{}'::jsonb
 );
 
-CREATE TABLE audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
   action TEXT NOT NULL,
   target_type TEXT NOT NULL,
@@ -390,17 +409,17 @@ CREATE TABLE audit_logs (
   user_agent TEXT
 );
 
-CREATE INDEX idx_devices_user_id ON devices(user_id);
-CREATE INDEX idx_devices_retrace_device_id ON devices(retrace_device_id);
-CREATE INDEX idx_devices_state ON devices(state);
-CREATE INDEX idx_device_locations_device_id ON device_locations(device_id);
-CREATE INDEX idx_device_locations_device_timestamp ON device_locations(device_timestamp DESC);
-CREATE INDEX idx_lost_cases_device_id ON lost_cases(device_id);
-CREATE INDEX idx_activity_events_device_id ON activity_events(device_id);
-CREATE INDEX idx_qr_tokens_device_id ON qr_tokens(device_id);
-CREATE INDEX idx_evidence_device_id ON evidence(device_id);
-CREATE INDEX idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_devices_user_id ON devices(user_id);
+CREATE INDEX IF NOT EXISTS idx_devices_retrace_device_id ON devices(retrace_device_id);
+CREATE INDEX IF NOT EXISTS idx_devices_state ON devices(state);
+CREATE INDEX IF NOT EXISTS idx_device_locations_device_id ON device_locations(device_id);
+CREATE INDEX IF NOT EXISTS idx_device_locations_device_timestamp ON device_locations(device_timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_lost_cases_device_id ON lost_cases(device_id);
+CREATE INDEX IF NOT EXISTS idx_activity_events_device_id ON activity_events(device_id);
+CREATE INDEX IF NOT EXISTS idx_qr_tokens_device_id ON qr_tokens(device_id);
+CREATE INDEX IF NOT EXISTS idx_evidence_device_id ON evidence(device_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
 
 INSERT INTO location_sources (name, description, min_accuracy, max_accuracy, requires_internet) VALUES
   ('GPS','GPS/GNSS satellite positioning',3,50,FALSE),
@@ -408,4 +427,5 @@ INSERT INTO location_sources (name, description, min_accuracy, max_accuracy, req
   ('CELLULAR','Cell tower triangulation',100,2000,TRUE),
   ('NEARBY','Bluetooth/Nearby device signals',1,50,FALSE),
   ('FINDER','Finder reported sighting',5,100,TRUE),
-  ('UNKNOWN','Unknown source',0,10000,FALSE);
+  ('UNKNOWN','Unknown source',0,10000,FALSE)
+ON CONFLICT (name) DO NOTHING;
