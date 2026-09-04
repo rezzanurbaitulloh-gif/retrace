@@ -1,5 +1,4 @@
 // Sync Engine — idempotent, retry-safe, resumable, ordered, deduped, conflict-aware (PRD 83)
-import 'dart:convert';
 class SyncEvent {
   final String id;
   final String type;

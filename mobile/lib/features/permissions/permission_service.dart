@@ -1,13 +1,13 @@
 import 'package:permission_handler/permission_handler.dart';
 class PermissionService {
-  static const _explain = {
-    Permission.location: 'Location for tracking (PRD 9)',
-    Permission.locationAlways: 'Background location for Lost Mode',
-    Permission.camera: 'Camera for recovery evidence (front/rear)',
-    Permission.notification: 'Notifications for recovery events',
-    Permission.bluetooth: 'Bluetooth/Nearby for nearby recovery',
-  };
-  static String explain(Permission p) => _explain[p] ?? p.toString();
+  static String explain(Permission p) {
+    if (p == Permission.location) return 'Location for tracking (PRD 9)';
+    if (p == Permission.locationAlways) return 'Background location for Lost Mode';
+    if (p == Permission.camera) return 'Camera for recovery evidence (front/rear)';
+    if (p == Permission.notification) return 'Notifications for recovery events';
+    if (p == Permission.bluetooth) return 'Bluetooth/Nearby for nearby recovery';
+    return p.toString();
+  }
   Future<bool> requestWithRationale(Permission p) async {
     final status = await p.status;
     if (status.isGranted) return true;
