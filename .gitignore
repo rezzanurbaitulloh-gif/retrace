@@ -64,3 +64,4 @@ supabase/.branches/
 # Logs
 *.log
 screenshots/
+screenshots-auth/
