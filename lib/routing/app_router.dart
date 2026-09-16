@@ -6,6 +6,9 @@ import 'package:retrace/app/design_gallery.dart';
 import 'package:retrace/data/auth/auth_user.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
 import 'package:retrace/features/lost_mode/lost_mode.dart';
+import 'package:retrace/features/finder/finder_page.dart';
+import 'package:retrace/features/finder/qr_scanner_page.dart';
+import 'package:retrace/features/lost_mode/lost_mode.dart';
 import 'package:retrace/features/lost_mode/lost_mode_activation_page.dart';
 import 'package:retrace/features/lost_mode/lost_mode_screen.dart';
 import 'package:retrace/features/lost_mode/lost_screen_page.dart';
@@ -156,6 +159,18 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/lost/:recoveryId',
         builder: (BuildContext context, GoRouterState s) =>
             LostScreenPage(recoveryId: s.pathParameters['recoveryId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/finder/scan',
+        builder: (BuildContext context, GoRouterState s) =>
+            const QrScannerPage(),
+      ),
+      GoRoute(
+        path: '/finder/:recoveryId',
+        builder: (BuildContext context, GoRouterState s) =>
+            FinderPage(
+              recoveryId: s.pathParameters['recoveryId'] ?? '',
+            ),
       ),
       GoRoute(
         path: '/map/live',
