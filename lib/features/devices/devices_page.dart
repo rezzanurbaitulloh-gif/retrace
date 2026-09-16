@@ -17,12 +17,25 @@ class DevicesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ThemeData theme = Theme.of(context);
     final AsyncValue<List<DeviceSummary>> devices =
         ref.watch(devicesStreamProvider);
     final DeviceFilter filter = ref.watch(devicesFilterProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('All Devices')),
+      appBar: AppBar(
+        title: const Text('All Devices'),
+        actions: [
+          IconButton(
+            tooltip: 'Add device',
+            onPressed: () => context.push('/devices/new'),
+            icon: const Icon(Icons.add_outlined),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/devices/new'),
+        icon: const Icon(Icons.add_outlined),
+        label: const Text('Add Device'),
+      ),
       body: Column(
         children: [
           Padding(
@@ -86,17 +99,34 @@ class DevicesPage extends ConsumerWidget {
               _ => const SizedBox.shrink(),
             },
           ),
-          if (devices is AsyncData<List<DeviceSummary>> &&
-              devices.valueOrNull?.isNotEmpty == true)
-            Padding(
-              padding: const EdgeInsets.all(RetraceSpacing.md),
-              child: Text(
-                'Device registration arrives in Phase 3.',
-                style: theme.textTheme.bodySmall,
-              ),
-            ),
         ],
       ),
+      bottomNavigationBar: devices.valueOrNull?.isEmpty == true
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(RetraceSpacing.md),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push('/protection-setup'),
+                        icon: const Icon(Icons.shield_outlined, size: 18),
+                        label: const Text('Protection setup'),
+                      ),
+                    ),
+                    const SizedBox(width: RetraceSpacing.sm),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push('/permissions'),
+                        icon: const Icon(Icons.verified_outlined, size: 18),
+                        label: const Text('Permissions'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -124,7 +154,7 @@ class _List extends ConsumerWidget {
         title: hasAny ? 'No matches' : 'No devices yet',
         message: hasAny
             ? 'Try a different search or filter.'
-            : 'Protect your first device with RETRACE. Registration arrives with device setup.',
+            : 'Protect your first device with RETRACE. Tap + to register this device.',
         actionLabel: hasAny ? 'Clear search' : null,
         onAction: hasAny
             ? () {

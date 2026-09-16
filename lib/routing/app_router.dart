@@ -10,11 +10,15 @@ import 'package:retrace/features/auth/auth_controller.dart';
 import 'package:retrace/features/auth/login_page.dart';
 import 'package:retrace/features/auth/recovery_page.dart';
 import 'package:retrace/features/auth/register_page.dart';
+import 'package:retrace/features/device_registration/device_registration_page.dart';
 import 'package:retrace/features/devices/device_detail_page.dart';
 import 'package:retrace/features/devices/devices_page.dart';
 import 'package:retrace/features/home/home_page.dart';
 import 'package:retrace/features/onboarding/onboarding_page.dart';
+import 'package:retrace/features/permissions/permission_center_page.dart';
+import 'package:retrace/features/pin/pin_setup_page.dart';
 import 'package:retrace/features/profile/profile_page.dart';
+import 'package:retrace/features/protection_setup/protection_setup_page.dart';
 import 'package:retrace/features/splash/splash_page.dart';
 
 /// All Phase 2 routes (§75 shell subset). Command/lost/finder/evidence/
@@ -60,6 +64,7 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         '/login',
         '/register',
         '/recovery',
+        '/design-system',
       ];
       if (user == null) {
         if (guestRoutes.contains(loc)) {
@@ -100,6 +105,26 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/design-system',
         builder: (BuildContext context, GoRouterState s) =>
             const DesignGalleryPage(),
+      ),
+      GoRoute(
+        path: '/devices/new',
+        builder: (BuildContext context, GoRouterState s) =>
+            const DeviceRegistrationPage(),
+      ),
+      GoRoute(
+        path: '/permissions',
+        builder: (BuildContext context, GoRouterState s) =>
+            const PermissionCenterPage(),
+      ),
+      GoRoute(
+        path: '/protection-setup',
+        builder: (BuildContext context, GoRouterState s) =>
+            const ProtectionSetupPage(),
+      ),
+      GoRoute(
+        path: '/pin',
+        builder: (BuildContext context, GoRouterState s) =>
+            const PinSetupPage(),
       ),
       GoRoute(
         path: '/devices/:id',

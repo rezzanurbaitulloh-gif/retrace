@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:retrace/app/theme_controller.dart';
 import 'package:retrace/core/theme/retrace_spacing.dart';
 import 'package:retrace/data/auth/auth_user.dart';
@@ -79,13 +80,13 @@ class ProfilePage extends ConsumerWidget {
                 ref.read(themeModeProvider.notifier).setMode(s.first),
           ),
           Text('Security', style: theme.textTheme.titleMedium),
-          const _UpcomingTile(
-            icon: Icons.lock_outlined,
-            title: 'RETRACE PIN',
-            subtitle: 'App credential, not system lock (Phase 9)',
-            sheetTitle: 'RETRACE PIN',
-            sheetBody:
-                'The RETRACE PIN is a separate app credential (hashed, rate-limited). Setup arrives in Phase 9 — no placeholder screen is shown before its backend exists.',
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.lock_outlined),
+            title: const Text('RETRACE PIN'),
+            subtitle: const Text('Hashed, rate-limited — tap to set (Phase 3 live)'),
+            trailing: const Icon(Icons.chevron_right_outlined),
+            onTap: () => context.push('/pin'),
           ),
           const _UpcomingTile(
             icon: Icons.health_and_safety_outlined,

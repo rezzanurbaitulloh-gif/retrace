@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:retrace/core/db/app_db.dart';
 import 'package:retrace/core/theme/retrace_colors.dart';
 
 /// Minimal device summary for the shell. Full device identity, status
@@ -54,20 +56,61 @@ abstract class DevicesRepository {
   Future<DeviceSummary?> getById(String id);
 }
 
-/// Phase 2 local stub: returns the real empty state (no devices registered
-/// yet) instead of hardcoded demo devices — hardcoding is forbidden (§69).
-/// Phase 3 replaces this with Supabase (`devices` table + RLS).
+/// Phase 3: local is source of truth, backed by AppDb (§45). Supabase sync
+/// arrives Phase 4 — until then offline-first means local queue is truthful,
+/// never a fake remote device.
 final class LocalDevicesRepository implements DevicesRepository {
+  LocalDevicesRepository(this._db);
+  final AppDb _db;
+
   @override
   Stream<List<DeviceSummary>> watchDevices() =>
-      Stream<List<DeviceSummary>>.value(const <DeviceSummary>[]);
+      _db.watchDevices().map(
+            (List<LocalDevice> list) => list
+                .map(
+                  (LocalDevice e) => DeviceSummary(
+                    id: e.id,
+                    name: e.name,
+                    meta: '${e.brand} ${e.model} • ${e.deviceType}',
+                    status: DeviceStatus.protected,
+                    lastSeen: 'Added ${_short(e.createdAt)}',
+                  ),
+                )
+                .toList(),
+          );
 
   @override
-  Future<DeviceSummary?> getById(String id) async => null;
+  Future<DeviceSummary?> getById(String id) async {
+    final List<LocalDevice> all = await _db.allDevices();
+    final LocalDevice? found = all.where((LocalDevice e) => e.id == id).firstOrNull;
+    if (found == null) return null;
+    return DeviceSummary(
+      id: found.id,
+      name: found.name,
+      meta: '${found.brand} ${found.model} • ${found.deviceType}',
+      status: DeviceStatus.protected,
+      lastSeen: 'Added ${_short(found.createdAt)}',
+    );
+  }
+
+  static String _short(DateTime dt) {
+    if (dt.millisecondsSinceEpoch == 0) return 'just now';
+    final Duration d = DateTime.now().difference(dt);
+    if (d.inMinutes < 1) return 'just now';
+    if (d.inHours < 1) return '${d.inMinutes}m ago';
+    if (d.inDays < 1) return '${d.inHours}h ago';
+    return '${d.inDays}d ago';
+  }
 }
 
+final appDbProvider = Provider<AppDb>((Ref ref) {
+  final AppDb db = AppDb();
+  ref.onDispose(() => db.close());
+  return db;
+});
+
 final devicesRepositoryProvider = Provider<DevicesRepository>(
-  (Ref ref) => LocalDevicesRepository(),
+  (Ref ref) => LocalDevicesRepository(ref.watch(appDbProvider)),
 );
 
 final devicesStreamProvider = StreamProvider<List<DeviceSummary>>(
