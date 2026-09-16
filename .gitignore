@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Secrets — never commit (security-review checklist)
+.env
+.env.*
+!.env.example

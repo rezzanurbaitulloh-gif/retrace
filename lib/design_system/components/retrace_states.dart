@@ -44,20 +44,25 @@ class EmptyState extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
-    required this.actionLabel,
-    required this.onAction,
+    this.actionLabel,
+    this.onAction,
     this.icon = Icons.devices_outlined,
   });
 
   final String title;
   final String message;
-  final String actionLabel;
-  final VoidCallback onAction;
+
+  /// Both must be non-null to render the button — read-only empties pass null
+  /// so no dead button ever ships.
+  final String? actionLabel;
+  final VoidCallback? onAction;
   final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final String? label = actionLabel;
+    final VoidCallback? action = onAction;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(RetraceSpacing.lg),
@@ -73,9 +78,10 @@ class EmptyState extends StatelessWidget {
             Text(message,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium),
-            const SizedBox(height: RetraceSpacing.md),
-            RetraceButton(
-                label: actionLabel, onPressed: onAction),
+            if (label != null && action != null) ...[
+              const SizedBox(height: RetraceSpacing.md),
+              RetraceButton(label: label, onPressed: action),
+            ],
           ],
         ),
       ),

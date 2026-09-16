@@ -19,7 +19,7 @@ class DesignGalleryPage extends ConsumerWidget {
     final ThemeMode mode = ref.watch(themeModeProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('RETRACE · Design System'),
+        title: const Text('RETRACE \u00b7 Design System'),
         actions: [
           Semantics(
             label: 'Toggle light and dark mode',
