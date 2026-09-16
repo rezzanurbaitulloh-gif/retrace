@@ -55,6 +55,10 @@ dependencies:
   permission_handler: ^13.0.2
   crypto: ^3.0.7
   collection: ^1.19.1
+  geolocator: ^14.0.2
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
+  workmanager: ^0.10.10
 
 dev_dependencies:
   flutter_test:

@@ -4,13 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrace/app/theme_controller.dart';
 import 'package:retrace/core/config/env.dart';
 import 'package:retrace/core/theme/retrace_theme.dart';
+import 'package:retrace/providers.dart';
 import 'package:retrace/routing/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:workmanager/workmanager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Workmanager for background location (§64)
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
   // Backend initializes only when the owner links Supabase via --dart-define.
-  // Otherwise repositories report "not configured" honestly — no fake data.
   if (Env.isSupabaseConfigured) {
     await Supabase.initialize(
       url: Env.supabaseUrl,

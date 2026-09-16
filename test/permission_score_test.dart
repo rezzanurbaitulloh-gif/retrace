@@ -29,8 +29,8 @@ void main() {
       final List<PermissionState> limited = AppPermission.values
           .map((AppPermission p) => _state(p, false, limited: true))
           .toList();
-      // each limited gives half weight = 50
-      expect(protectionScore(limited), equals(50));
+      // each limited gives half weight (integer division): 12+12+7+5+5+7 = 48
+      expect(protectionScore(limited), equals(48));
     });
     test('realistic mix never fake', () {
       final List<PermissionState> mix = <PermissionState>[

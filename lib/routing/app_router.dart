@@ -14,6 +14,8 @@ import 'package:retrace/features/device_registration/device_registration_page.da
 import 'package:retrace/features/devices/device_detail_page.dart';
 import 'package:retrace/features/devices/devices_page.dart';
 import 'package:retrace/features/home/home_page.dart';
+import 'package:retrace/features/map/live_map_page.dart';
+import 'package:retrace/features/map/location_history_page.dart';
 import 'package:retrace/features/onboarding/onboarding_page.dart';
 import 'package:retrace/features/permissions/permission_center_page.dart';
 import 'package:retrace/features/pin/pin_setup_page.dart';
@@ -125,6 +127,21 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/pin',
         builder: (BuildContext context, GoRouterState s) =>
             const PinSetupPage(),
+      ),
+      GoRoute(
+        path: '/map/live',
+        builder: (BuildContext context, GoRouterState s) =>
+            const LiveMapPage() as Widget,
+      ),
+      GoRoute(
+        path: '/map/history',
+        builder: (BuildContext context, GoRouterState s) =>
+            const LocationHistoryPage(),
+      ),
+      GoRoute(
+        path: '/devices/:id/map',
+        builder: (BuildContext context, GoRouterState s) =>
+            LocationHistoryPage(deviceId: s.pathParameters['id']),
       ),
       GoRoute(
         path: '/devices/:id',

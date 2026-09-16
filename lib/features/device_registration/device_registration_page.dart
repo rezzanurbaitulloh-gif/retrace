@@ -7,6 +7,7 @@ import 'package:retrace/design_system/components/retrace_buttons.dart';
 import 'package:retrace/features/devices/devices_repository.dart';
 import 'package:retrace/services/device_info_service.dart';
 
+/// Provider for device info service — can be overridden in tests.
 final deviceInfoServiceProvider =
     Provider<DeviceInfoService>((Ref ref) => RealDeviceInfoService());
 
@@ -185,6 +186,7 @@ class _DeviceRegistrationPageState
             ],
             const SizedBox(height: RetraceSpacing.lg),
             RetraceButton(
+              key: const Key('save_device_button'),
               label: 'Save Device',
               isLoading: _saving,
               onPressed: _saving ? null : _submit,

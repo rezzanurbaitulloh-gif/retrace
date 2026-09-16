@@ -52,6 +52,21 @@ class LocalLocation {
   final String source;
   final bool isSynced;
   final String clientId;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'device_id': deviceId,
+        'latitude': latitude,
+        'longitude': longitude,
+        'accuracy': accuracy,
+        'altitude': null,
+        'speed': null,
+        'heading': null,
+        'timestamp': timestamp.toIso8601String(),
+        'source': source,
+        'network_state': null,
+        'battery_level': null,
+        'client_id': clientId,
+      };
 }
 
 class PendingCommand {
