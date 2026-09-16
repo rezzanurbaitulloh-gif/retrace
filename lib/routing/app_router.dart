@@ -5,6 +5,10 @@ import 'package:retrace/app/bootstrap.dart';
 import 'package:retrace/app/design_gallery.dart';
 import 'package:retrace/data/auth/auth_user.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
+import 'package:retrace/features/lost_mode/lost_mode.dart';
+import 'package:retrace/features/lost_mode/lost_mode_activation_page.dart';
+import 'package:retrace/features/lost_mode/lost_mode_screen.dart';
+import 'package:retrace/features/lost_mode/lost_screen_page.dart';
 import 'package:retrace/features/activity/activity_page.dart';
 import 'package:retrace/features/auth/auth_controller.dart';
 import 'package:retrace/features/auth/login_page.dart';
@@ -127,6 +131,31 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/pin',
         builder: (BuildContext context, GoRouterState s) =>
             const PinSetupPage(),
+      ),
+      GoRoute(
+        path: '/devices/:id/lost/activate',
+        builder: (BuildContext context, GoRouterState s) =>
+            LostModeActivationPage(
+              deviceId: s.pathParameters['id'] ?? '',
+              deviceName: s.extra as String? ?? 'Device',
+            ),
+      ),
+      GoRoute(
+        path: '/devices/:id/lost',
+        builder: (BuildContext context, GoRouterState s) =>
+            LostModeScreen(
+              info: s.extra as LostModeInfo? ??
+                  LostModeInfo(
+                    deviceId: s.pathParameters['id'] ?? '',
+                    state: LostModeState.active,
+                    activatedAt: DateTime.now(),
+                  ),
+            ),
+      ),
+      GoRoute(
+        path: '/lost/:recoveryId',
+        builder: (BuildContext context, GoRouterState s) =>
+            LostScreenPage(recoveryId: s.pathParameters['recoveryId'] ?? ''),
       ),
       GoRoute(
         path: '/map/live',
