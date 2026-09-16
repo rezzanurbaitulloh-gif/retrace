@@ -5,10 +5,10 @@ import 'package:retrace/app/bootstrap.dart';
 import 'package:retrace/app/design_gallery.dart';
 import 'package:retrace/data/auth/auth_user.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
+import 'package:retrace/features/evidence/evidence_page.dart';
 import 'package:retrace/features/lost_mode/lost_mode.dart';
 import 'package:retrace/features/finder/finder_page.dart';
 import 'package:retrace/features/finder/qr_scanner_page.dart';
-import 'package:retrace/features/lost_mode/lost_mode.dart';
 import 'package:retrace/features/lost_mode/lost_mode_activation_page.dart';
 import 'package:retrace/features/lost_mode/lost_mode_screen.dart';
 import 'package:retrace/features/lost_mode/lost_screen_page.dart';
@@ -186,6 +186,11 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/devices/:id/map',
         builder: (BuildContext context, GoRouterState s) =>
             LocationHistoryPage(deviceId: s.pathParameters['id']),
+      ),
+      GoRoute(
+        path: '/devices/:id/evidence',
+        builder: (BuildContext context, GoRouterState s) =>
+            EvidencePage(deviceId: s.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: '/devices/:id',

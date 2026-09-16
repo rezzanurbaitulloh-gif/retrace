@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:retrace/core/theme/retrace_spacing.dart';
+import 'package:retrace/design_system/components/retrace_buttons.dart';
 import 'package:retrace/design_system/components/retrace_cards.dart';
 import 'package:retrace/design_system/components/retrace_states.dart';
 import 'package:retrace/features/devices/devices_repository.dart';
@@ -52,6 +54,14 @@ class DeviceDetailPage extends ConsumerWidget {
                   const MapCard(
                     statusLine:
                         'Map engine arrives in Phase 4 — no location is shown until real tracking exists.',
+                  ),
+                  const SizedBox(height: RetraceSpacing.sm),
+                  RetraceButton(
+                    label: 'View evidence',
+                    icon: Icons.photo_library_outlined,
+                    isSecondary: true,
+                    onPressed: () => context
+                        .push('/devices/${value.id}/evidence'),
                   ),
                 ],
               ),
