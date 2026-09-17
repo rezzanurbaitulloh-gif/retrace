@@ -104,7 +104,7 @@ class _LostModeScreenState extends ConsumerState<LostModeScreen> {
                 const SizedBox(height: RetraceSpacing.lg),
 
                 // Finder info
-                const _FinderInfoCard(),
+                _FinderInfoCard(recoveryId: _info.recoveryId),
 
                 const SizedBox(height: RetraceSpacing.lg),
 
@@ -243,12 +243,17 @@ class _StatusRow extends StatelessWidget {
 }
 
 /// Finder info card.
+/// What a finder sees, previewed with this device's real recovery ID —
+/// never a sample ID. Null means activation hasn't issued one yet.
 class _FinderInfoCard extends StatelessWidget {
-  const _FinderInfoCard({super.key});
+  const _FinderInfoCard({super.key, required this.recoveryId});
+
+  final String? recoveryId;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final String id = recoveryId ?? 'Not issued yet';
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -268,10 +273,10 @@ class _FinderInfoCard extends StatelessWidget {
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
-            Text('Recovery ID: RT-XXXXXX', style: theme.textTheme.bodySmall),
+            Text('Recovery ID: $id', style: theme.textTheme.bodySmall),
             const SizedBox(height: 12),
             Text(
-              'DEVICE LOST\n\nIf you\'ve found this device, please help return it.\n\n[ Contact Owner ]\n\nRecovery ID\nRT-XXXXXX\n\n[ QR ]',
+              'DEVICE LOST\n\nIf you\'ve found this device, please help return it.\n\n[ Contact Owner ]\n\nRecovery ID\n$id\n\n[ QR ]',
               style: theme.textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
             ),
           ],

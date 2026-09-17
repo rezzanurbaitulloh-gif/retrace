@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:retrace/core/theme/retrace_colors.dart'
     show RetraceColors;
@@ -128,7 +129,7 @@ class _Content extends StatelessWidget {
               label: 'Contact Owner',
               isDestructive: false,
               icon: Icons.email_outlined,
-              onPressed: () => _launchContact(data.contactUrl),
+              onPressed: () => _launchContact(context, data.contactUrl),
             ),
             const SizedBox(height: RetraceSpacing.md),
 
@@ -144,8 +145,15 @@ class _Content extends StatelessWidget {
     );
   }
 
-  Future<void> _launchContact(String url) async {
-    // TODO: Launch URL / email intent
+  Future<void> _launchContact(BuildContext context, String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open $url')),
+        );
+      }
+    }
   }
 }
 

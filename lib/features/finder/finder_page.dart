@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:retrace/core/theme/retrace_colors.dart';
@@ -27,6 +30,7 @@ class FinderPage extends ConsumerStatefulWidget {
 
 class _FinderPageState extends ConsumerState<FinderPage> {
   LostScreenData? _data;
+  FinderSession? _session;
   bool _loading = true;
   String? _error;
 
@@ -39,9 +43,20 @@ class _FinderPageState extends ConsumerState<FinderPage> {
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
-      final data = await ref.read(finderControllerProvider).getRecoveryData(widget.recoveryId);
+      final controller = ref.read(finderControllerProvider);
+      final data = await controller.getRecoveryData(widget.recoveryId);
+      // A session is required to send contact/sighting. The device behind
+      // a recoveryId is resolved server-side when tables land; until then
+      // the session is local-first and queued (never a silent no-op).
+      FinderSession? session;
+      try {
+        session = await controller.startSession(widget.recoveryId, '');
+      } on Object {
+        session = null;
+      }
       if (mounted) setState(() {
         _data = data;
+        _session = session ?? widget.session;
         _loading = false;
       });
     } on Object catch (e) {
@@ -68,7 +83,7 @@ class _FinderPageState extends ConsumerState<FinderPage> {
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
           : _error != null
               ? _ErrorScreen(message: _error!, onRetry: _loadData)
-              : _Content(data: _data!, session: widget.session),
+              : _Content(data: _data!, session: _session),
     );
   }
 }
@@ -168,7 +183,7 @@ class _Content extends ConsumerWidget {
               label: 'Share My Location',
               isSecondary: true,
               icon: Icons.my_location,
-              onPressed: () => _shareLocation(context),
+              onPressed: () => _shareLocation(context, ref),
             ),
             const SizedBox(height: RetraceSpacing.md),
 
@@ -185,6 +200,16 @@ class _Content extends ConsumerWidget {
   }
 
   Future<void> _showContactForm(BuildContext context, WidgetRef ref, FinderSession? session) async {
+    if (session == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Session unavailable — go back and rescan the QR code.',
+          ),
+        ),
+      );
+      return;
+    }
     final nameController = TextEditingController();
     final contactController = TextEditingController();
     final messageController = TextEditingController();
@@ -247,11 +272,55 @@ class _Content extends ConsumerWidget {
     );
   }
 
-  Future<void> _shareLocation(BuildContext context) async {
-    // TODO: Request location permission and share
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Location sharing coming in Phase 7')),
-    );
+  Future<void> _shareLocation(BuildContext context, WidgetRef ref) async {
+    final FinderSession? session = this.session;
+    if (session == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Session unavailable — go back and rescan the QR code.',
+          ),
+        ),
+      );
+      return;
+    }
+    ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    try {
+      final Position pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+      final FinderLocation location = FinderLocation(
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        accuracy: pos.accuracy,
+        timestamp: pos.timestamp,
+      );
+      await ref
+          .read(finderControllerProvider)
+          .reportSighting(session.id, location);
+      unawaited(
+        ref.read(notificationControllerProvider).sightingReported(
+              recoveryId: data.recoveryId,
+            ),
+      );
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Location shared — queued for the owner.'),
+        ),
+      );
+    } on Object {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not get your location. Check location permission '
+            'in Protection Status and try again.',
+          ),
+        ),
+      );
+    }
   }
 }
 

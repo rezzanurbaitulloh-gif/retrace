@@ -169,6 +169,19 @@ class NotificationController {
     );
   }
 
+  /// Finder-side confirmation after sharing a sighting location.
+  /// Same honesty contract as [contactSent]: queued, not delivered.
+  Future<void> sightingReported({required String recoveryId}) {
+    return _emit(
+      key: 'sighting_$recoveryId',
+      channel: RetraceChannel.recovery,
+      title: 'Sighting shared',
+      body:
+          'Your location is queued for the owner and syncs when possible.',
+      route: '/finder/$recoveryId',
+    );
+  }
+
   /// Evidence capture outcome (owner side).
   Future<void> evidenceStored({
     required String deviceId,
