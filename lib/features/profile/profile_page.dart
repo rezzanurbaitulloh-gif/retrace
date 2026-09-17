@@ -8,8 +8,8 @@ import 'package:retrace/design_system/components/retrace_buttons.dart';
 import 'package:retrace/design_system/components/retrace_overlays.dart';
 import 'package:retrace/features/auth/auth_controller.dart';
 
-/// Profile shell (§6). Account/Appearance/Support are live; the five
-/// upcoming sections show an honest "coming in Phase N" sheet instead of a
+/// Profile shell (§6). Account/Appearance/Security/Support are live;
+/// sections not yet built show an honest "coming soon" sheet instead of a
 /// dead button or a fake screen — never a placeholder page (§50 no-fake).
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -88,21 +88,23 @@ class ProfilePage extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right_outlined),
             onTap: () => context.push('/pin'),
           ),
-          const _UpcomingTile(
-            icon: Icons.health_and_safety_outlined,
-            title: 'Recovery',
-            subtitle: 'Recovery codes & fallback (Phase 9)',
-            sheetTitle: 'Recovery',
-            sheetBody:
-                'Recovery via browser / borrowed phone / codes is Phase 9. Your Supabase session is the current recovery path — sign out + sign in on another device works today.',
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.health_and_safety_outlined),
+            title: const Text('Recovery'),
+            subtitle: const Text('PIN recovery codes & account fallback',
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(Icons.chevron_right_outlined),
+            onTap: () => context.push('/pin/codes'),
           ),
-          const _UpcomingTile(
-            icon: Icons.group_outlined,
-            title: 'Trusted Contacts',
-            subtitle: 'Emergency / Recovery / Always Track (Phase 9)',
-            sheetTitle: 'Trusted Contacts',
-            sheetBody:
-                'Trusted contacts with RLS-enforced permission scopes ship in Phase 9. No access is granted before its table and policies exist.',
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.group_outlined),
+            title: const Text('Trusted Contacts'),
+            subtitle: const Text('Emergency / Recovery / Location scopes',
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(Icons.chevron_right_outlined),
+            onTap: () => context.push('/trusted-contacts'),
           ),
           const Divider(height: 1),
           const SizedBox(height: RetraceSpacing.md),

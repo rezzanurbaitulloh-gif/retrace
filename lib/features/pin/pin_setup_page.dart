@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:retrace/core/theme/retrace_spacing.dart';
 import 'package:retrace/data/security/pin_repository.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
@@ -133,8 +134,21 @@ class _PinSetupPageState extends ConsumerState<PinSetupPage> {
           RetraceButton(label: 'Save PIN', isLoading: _saving, onPressed: _saving ? null : _save),
           if (_hasPin) ...[
             const SizedBox(height: RetraceSpacing.sm),
+            RetraceButton(
+              label: 'Recovery codes',
+              icon: Icons.key_outlined,
+              isSecondary: true,
+              onPressed: () => context.push('/pin/codes'),
+            ),
+            const SizedBox(height: RetraceSpacing.sm),
+            RetraceButton(
+              label: 'Forgot PIN? Reset with a code',
+              isSecondary: true,
+              onPressed: () => context.push('/pin/recovery'),
+            ),
+            const SizedBox(height: RetraceSpacing.sm),
             Text(
-              'Recovery: reinstall or clear via secure storage + re-auth (§41). IMEI+PIN never equals full access (§13).',
+              'IMEI+PIN never equals full access (§13). Without your codes, recovery is reinstall + re-auth.',
               style: theme.textTheme.bodySmall,
             ),
           ],

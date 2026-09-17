@@ -6,6 +6,9 @@ import 'package:retrace/app/design_gallery.dart';
 import 'package:retrace/data/auth/auth_user.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
 import 'package:retrace/features/evidence/evidence_page.dart';
+import 'package:retrace/features/pin/pin_recovery_page.dart';
+import 'package:retrace/features/pin/recovery_codes_page.dart';
+import 'package:retrace/features/trusted_contacts/trusted_contacts_page.dart';
 import 'package:retrace/features/lost_mode/lost_mode.dart';
 import 'package:retrace/features/finder/finder_page.dart';
 import 'package:retrace/features/finder/qr_scanner_page.dart';
@@ -134,6 +137,21 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/pin',
         builder: (BuildContext context, GoRouterState s) =>
             const PinSetupPage(),
+      ),
+      GoRoute(
+        path: '/pin/codes',
+        builder: (BuildContext context, GoRouterState s) =>
+            const RecoveryCodesPage(),
+      ),
+      GoRoute(
+        path: '/pin/recovery',
+        builder: (BuildContext context, GoRouterState s) =>
+            const PinRecoveryPage(),
+      ),
+      GoRoute(
+        path: '/trusted-contacts',
+        builder: (BuildContext context, GoRouterState s) =>
+            const TrustedContactsPage(),
       ),
       GoRoute(
         path: '/devices/:id/lost/activate',
