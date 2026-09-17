@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:retrace/core/theme/retrace_spacing.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
 import 'package:retrace/design_system/components/retrace_buttons.dart';
 
 /// 4-step onboarding (§8–§9): Welcome → Protect → Always ready → Device type.
 /// Progressive disclosure — never 30 fields up front. Completing persists
-/// `seen=1` + device type; the router then moves to /login on its own.
+/// `seen=1` + device type, then the visitor explores the shell as a guest;
+/// sign-in happens only when they use an account-bound feature.
 class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
 
@@ -26,7 +28,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     super.dispose();
   }
 
-  Future<void> _finish({bool skipped = false}) async {
+  Future<void> _finish({bool skipped = false, String goTo = '/home'}) async {
     if (_saving) return;
     setState(() => _saving = true);
     try {
@@ -34,6 +36,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       if (!skipped) await store.setDeviceType(_deviceType);
       await store.markSeen();
       ref.read(onboardingSeenProvider.notifier).state = true;
+      // maybeOf: the page also runs in widget tests / embeds without a
+      // router — navigation is skipped there instead of crashing.
+      if (mounted) GoRouter.maybeOf(context)?.go(goTo);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -117,18 +122,34 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 child: _index < total - 1
                     ? RetraceButton(
                         label: 'Continue',
-                        onPressed: () => _pages.nextPage(
-                          duration: const Duration(milliseconds: 220),
-                          curve: Curves.easeOutCubic,
-                        ),
+                        onPressed: _saving
+                            ? null
+                            : () => _pages.nextPage(
+                                  duration:
+                                      const Duration(milliseconds: 220),
+                                  curve: Curves.easeOutCubic,
+                                ),
                       )
                     : RetraceButton(
-                        label: 'Get Started',
+                        label: 'Explore first',
                         isLoading: _saving,
                         onPressed:
                             _saving ? null : () => _finish(),
                       ),
               ),
+              if (_index == total - 1) ...[
+                const SizedBox(height: RetraceSpacing.sm),
+                SizedBox(
+                  width: double.infinity,
+                  child: RetraceButton(
+                    label: 'I have an account — Sign in',
+                    isSecondary: true,
+                    onPressed: _saving
+                        ? null
+                        : () => _finish(goTo: '/login'),
+                  ),
+                ),
+              ],
               if (_index == 0) ...[
                 const SizedBox(height: RetraceSpacing.sm),
                 Text('Step 1 of $total',

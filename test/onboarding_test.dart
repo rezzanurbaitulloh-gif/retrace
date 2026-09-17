@@ -25,7 +25,8 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(find.text('What are you protecting?'), findsOneWidget);
-    await tester.tap(find.text('Get Started'));
+    expect(find.text('I have an account — Sign in'), findsOneWidget);
+    await tester.tap(find.text('Explore first'));
     await tester.pumpAndSettle();
     // allow async write
     await tester.pump(const Duration(milliseconds: 50));
