@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import 'package:retrace/design_system/components/retrace_overlays.dart';
 import 'package:retrace/features/finder/finder.dart';
 import 'package:retrace/features/finder/finder_repository.dart';
 import 'package:retrace/features/lost_mode/lost_mode.dart';
+import 'package:retrace/features/notifications/notifications_controller.dart';
 
 /// Finder page — public recovery page (§31).
 /// Finder doesn't need to install RETRACE.
@@ -229,6 +232,11 @@ class _Content extends ConsumerWidget {
                 if (!form.isValid) return;
                 if (session != null) {
                   await ref.read(finderControllerProvider).sendContact(session.id, form);
+                  unawaited(
+                    ref.read(notificationControllerProvider).contactSent(
+                          recoveryId: data.recoveryId,
+                        ),
+                  );
                 }
                 if (context.mounted) Navigator.of(context).pop();
               },

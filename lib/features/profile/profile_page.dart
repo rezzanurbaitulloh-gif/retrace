@@ -109,13 +109,14 @@ class ProfilePage extends ConsumerWidget {
           const Divider(height: 1),
           const SizedBox(height: RetraceSpacing.md),
           Text('Preferences', style: theme.textTheme.titleMedium),
-          const _UpcomingTile(
-            icon: Icons.notifications_outlined,
-            title: 'Notifications',
-            subtitle: 'Categories + deep links (Phase 10)',
-            sheetTitle: 'Notifications',
-            sheetBody:
-                'Push + local notifications with deep links are Phase 10. The current build shows no fake notifications.',
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.notifications_outlined),
+            title: const Text('Notifications'),
+            subtitle: const Text('Command updates & recovery alerts',
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(Icons.chevron_right_outlined),
+            onTap: () => context.push('/notifications'),
           ),
           const _UpcomingTile(
             icon: Icons.language_outlined,

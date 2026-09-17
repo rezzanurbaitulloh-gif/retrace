@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +9,7 @@ import 'package:retrace/design_system/components/retrace_overlays.dart';
 import 'package:retrace/design_system/components/retrace_states.dart';
 import 'package:retrace/features/evidence/evidence.dart';
 import 'package:retrace/features/evidence/evidence_repository.dart';
+import 'package:retrace/features/notifications/notifications_controller.dart';
 import 'package:retrace/services/permission_service.dart';
 
 /// Owner evidence page (§33-34): photo capture (camera/gallery) with
@@ -122,6 +125,13 @@ class _EvidencePageState extends ConsumerState<EvidencePage> {
       setState(() => _capturing = false);
       await _load();
       if (!mounted) return;
+      unawaited(
+        ref.read(notificationControllerProvider).evidenceStored(
+              deviceId: widget.deviceId,
+              fileName: item.fileName,
+              uploaded: item.uploaded,
+            ),
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

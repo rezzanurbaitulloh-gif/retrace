@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import 'package:retrace/design_system/components/retrace_overlays.dart';
 import 'package:retrace/features/auth/auth_controller.dart';
 import 'package:retrace/features/lost_mode/lost_mode.dart';
 import 'package:retrace/features/lost_mode/lost_mode_repository.dart';
+import 'package:retrace/features/notifications/notifications_controller.dart';
 
 /// Lost Mode screen — recovery command center (§24).
 class LostModeScreen extends ConsumerStatefulWidget {
@@ -157,7 +160,14 @@ class _LostModeScreenState extends ConsumerState<LostModeScreen> {
         createdAt: DateTime.now(),
         requestedBy: ref.read(authControllerProvider).valueOrNull?.email ?? 'unknown',
       );
-      await ref.read(lostModeControllerProvider).sendCommand(command);
+      final RemoteCommand sent =
+          await ref.read(lostModeControllerProvider).sendCommand(command);
+      unawaited(
+        ref.read(notificationControllerProvider).commandStatus(
+              command: sent,
+              delivered: sent.status != CommandStatus.pending,
+            ),
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${type.label} command sent')),

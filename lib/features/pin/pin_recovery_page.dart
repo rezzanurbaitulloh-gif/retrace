@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:retrace/core/security/pin_crypto.dart';
 import 'package:retrace/core/theme/retrace_spacing.dart';
 import 'package:retrace/data/security/recovery_codes_repository.dart';
 import 'package:retrace/design_system/components/retrace_buttons.dart';
+import 'package:retrace/features/notifications/notifications_controller.dart';
 import 'package:retrace/features/pin/pin_setup_page.dart';
 
 /// Forgotten-PIN flow (§41): burn one recovery code, then set a new PIN.
@@ -59,6 +62,12 @@ class _PinRecoveryPageState extends ConsumerState<PinRecoveryPage> {
       final bool ok = await repo.verifyAndBurn(_code.text);
       if (!mounted) return;
       if (ok) {
+        final int remaining = await repo.remainingCount();
+        unawaited(
+          ref.read(notificationControllerProvider).lastCodeWarning(
+                remaining: remaining,
+              ),
+        );
         setState(() {
           _codeAccepted = true;
           _working = false;

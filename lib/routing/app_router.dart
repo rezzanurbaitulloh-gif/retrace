@@ -6,6 +6,8 @@ import 'package:retrace/app/design_gallery.dart';
 import 'package:retrace/data/auth/auth_user.dart';
 import 'package:retrace/data/session/onboarding_store.dart';
 import 'package:retrace/features/evidence/evidence_page.dart';
+import 'package:retrace/features/notifications/notifications_controller.dart';
+import 'package:retrace/features/notifications/notifications_page.dart';
 import 'package:retrace/features/pin/pin_recovery_page.dart';
 import 'package:retrace/features/pin/recovery_codes_page.dart';
 import 'package:retrace/features/trusted_contacts/trusted_contacts_page.dart';
@@ -76,9 +78,21 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
           authControllerProvider,
           // ignore: unnecessary_underscores
           (_, __) => bump());
+  final ProviderSubscription<String?> subLinks =
+      ref.listen<String?>(
+          deepLinkProvider,
+          // ignore: unnecessary_underscores
+          (_, __) => bump());
+  final ProviderSubscription<AsyncValue<void>> subNotifs =
+      ref.listen<AsyncValue<void>>(
+          notificationInitProvider,
+          // ignore: unnecessary_underscores
+          (_, __) => bump());
   ref.onDispose(() {
     subBoot.close();
     subAuth.close();
+    subLinks.close();
+    subNotifs.close();
     refresh.dispose();
   });
 
@@ -97,6 +111,14 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
       }
       final AuthUser? user =
           ref.read(authControllerProvider).valueOrNull;
+      // Tapped notification / incoming link wins once boot + onboarding
+      // are done — but never smuggles a guest past an auth gate: gated
+      // links wait until after sign-in.
+      final String? pending = ref.read(deepLinkProvider);
+      if (pending != null && (user != null || !requiresAuth(pending))) {
+        ref.read(deepLinkProvider.notifier).consume();
+        return pending;
+      }
       if (user == null) {
         if (guestRoutes.contains(loc)) {
           // Returning guests land in the shell as guests — sign-in
@@ -174,6 +196,11 @@ final routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/trusted-contacts',
         builder: (BuildContext context, GoRouterState s) =>
             const TrustedContactsPage(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (BuildContext context, GoRouterState s) =>
+            const NotificationsPage(),
       ),
       GoRoute(
         path: '/devices/:id/lost/activate',
