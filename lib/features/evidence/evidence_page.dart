@@ -171,9 +171,15 @@ class _EvidencePageState extends ConsumerState<EvidencePage> {
           RetraceButton(
             label: 'Open Settings',
             icon: Icons.settings_outlined,
-            onPressed: () {
+            onPressed: () async {
+              final ScaffoldMessengerState messenger =
+                  ScaffoldMessenger.of(context);
               Navigator.of(context).pop();
-              ref.read(permissionServiceProvider).openSettings();
+              try {
+                await ref.read(permissionServiceProvider).openSettings();
+              } on PermissionSettingsUnavailable catch (e) {
+                messenger.showSnackBar(SnackBar(content: Text(e.message)));
+              }
             },
           ),
           const SizedBox(height: RetraceSpacing.sm),

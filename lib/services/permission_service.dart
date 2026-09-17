@@ -1,6 +1,17 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+/// Opening system settings is not possible on platforms without a
+/// permission-handler implementation (e.g. Linux desktop) — callers must
+/// catch this and explain instead of crashing.
+final class PermissionSettingsUnavailable implements Exception {
+  const PermissionSettingsUnavailable(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
 
 /// Real permission states (§15, §64). Tap → explains why, status, risk, fix.
 /// Open Settings is the only honest path — we never pretend to toggle ourselves.
@@ -88,7 +99,16 @@ final class RealPermissionService implements PermissionService {
   }
 
   @override
-  Future<void> openSettings() => openAppSettings();
+  Future<void> openSettings() async {
+    try {
+      await openAppSettings();
+    } on MissingPluginException {
+      throw const PermissionSettingsUnavailable(
+        'System settings cannot be opened on this device. '
+        'Change permissions in the system settings app instead.',
+      );
+    }
+  }
 
   Future<PermissionStatus> _nativeStatus(AppPermission p) async {
     try {

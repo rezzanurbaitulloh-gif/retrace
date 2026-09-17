@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -134,8 +135,12 @@ final class RealLocationEngine implements LocationEngine {
   @override
   Future<void> requestPermission() async {
     _setState(LocationEngineState.requestingPermission);
-    final LocationPermission perm = await Geolocator.requestPermission();
-    if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+    final LocationPermission? perm = await _safePermission(
+      Geolocator.requestPermission,
+    );
+    if (perm == null ||
+        perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
       _setState(LocationEngineState.permissionDenied);
       return;
     }
@@ -149,8 +154,25 @@ final class RealLocationEngine implements LocationEngine {
 
   @override
   Future<bool> hasPermission() async {
-    final LocationPermission perm = await Geolocator.checkPermission();
-    return perm == LocationPermission.always || perm == LocationPermission.whileInUse;
+    final LocationPermission? perm = await _safePermission(
+      Geolocator.checkPermission,
+    );
+    return perm == LocationPermission.always ||
+        perm == LocationPermission.whileInUse;
+  }
+
+  /// Null when the platform has no location implementation (e.g. Linux
+  /// desktop) — callers treat it as denied, never crash.
+  Future<LocationPermission?> _safePermission(
+    Future<LocationPermission> Function() call,
+  ) async {
+    try {
+      return await call();
+    } on MissingPluginException {
+      return null;
+    } on Object {
+      return null;
+    }
   }
 
   @override

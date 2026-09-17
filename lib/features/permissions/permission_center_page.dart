@@ -172,9 +172,19 @@ class _PermissionTile extends ConsumerWidget {
                   width: double.infinity,
                   child: RetraceButton(
                     label: 'Open Settings',
-                    onPressed: () {
+                    onPressed: () async {
+                      final ScaffoldMessengerState messenger =
+                          ScaffoldMessenger.of(ctx);
                       Navigator.of(ctx).pop();
-                      ref.read(permissionServiceProvider).openSettings();
+                      try {
+                        await ref
+                            .read(permissionServiceProvider)
+                            .openSettings();
+                      } on PermissionSettingsUnavailable catch (e) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(e.message)),
+                        );
+                      }
                     },
                   ),
                 ),
