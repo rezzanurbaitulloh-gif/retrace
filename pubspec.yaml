@@ -44,8 +44,8 @@ dependencies:
   google_fonts: ^6.2.1
 
   cupertino_icons: ^1.0.8
-  drift: ^2.35.0
-  drift_flutter: ^0.3.1
+  drift: ^2.34.0
+  drift_flutter: ^0.3.0
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
   device_info_plus: ^12.4.0
@@ -79,7 +79,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   build_runner: ^2.16.1
-  drift_dev: ^2.35.0
+  drift_dev: ^2.34.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
