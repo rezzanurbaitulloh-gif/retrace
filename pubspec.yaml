@@ -17,7 +17,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.13.2
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -44,8 +44,8 @@ dependencies:
   google_fonts: ^6.2.1
 
   cupertino_icons: ^1.0.8
-  drift: ^2.34.0
-  drift_flutter: ^0.3.0
+  drift: ^2.35.0
+  drift_flutter: ^0.3.1
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
   device_info_plus: ^12.4.0
@@ -77,9 +77,9 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
-  build_runner: ^2.14.0
-  drift_dev: ^2.34.0
+  flutter_lints: ^6.0.0
+  build_runner: ^2.16.1
+  drift_dev: ^2.35.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
